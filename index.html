@@ -3,23 +3,480 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Be My Valentine? 💕</title>
-    <link rel="stylesheet" href="./style.css">
+    <title>A Special Valentine's Quest 💕</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .stage {
+            display: none;
+        }
+
+        .stage.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: #764ba2;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .character-section {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .character {
+            cursor: pointer;
+            padding: 20px;
+            border: 3px solid transparent;
+            border-radius: 15px;
+            transition: all 0.3s;
+            margin: 10px;
+            background: #f8f9fa;
+        }
+
+        .character:hover {
+            border-color: #667eea;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.3);
+        }
+
+        .character.selected {
+            border-color: #764ba2;
+            background: #e9ecef;
+        }
+
+        .character-emoji {
+            font-size: 4em;
+            margin-bottom: 10px;
+        }
+
+        .problem-section {
+            margin: 30px 0;
+            text-align: left;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .problem {
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .problem:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .problem h3 {
+            color: #764ba2;
+            margin-bottom: 10px;
+        }
+
+        .problem-text {
+            font-size: 1.1em;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(102,126,234,0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .envelope {
+            position: relative;
+            width: 300px;
+            height: 200px;
+            margin: 30px auto;
+            cursor: pointer;
+        }
+
+        .envelope-body {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #f4e5d3;
+            border: 3px solid #d4a373;
+            border-radius: 10px;
+            transition: all 0.5s;
+        }
+
+        .envelope-flap {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-top: 100px solid #e8d5c4;
+            top: 0;
+            left: 0;
+            border-radius: 5px;
+            transition: all 0.5s;
+            transform-origin: top center;
+        }
+
+        .envelope:hover .envelope-flap {
+            transform: rotateX(-30deg);
+        }
+
+        .envelope.open .envelope-flap {
+            transform: rotateX(-180deg);
+        }
+
+        .letter {
+            position: absolute;
+            width: 90%;
+            height: 150%;
+            background: white;
+            left: 5%;
+            top: -150%;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.8s;
+            overflow-y: auto;
+        }
+
+        .envelope.open .letter {
+            top: 120%;
+        }
+
+        .heart-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .floating-heart {
+            position: absolute;
+            font-size: 2em;
+            animation: float 4s ease-in infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .message {
+            color: #764ba2;
+            font-size: 1.1em;
+            line-height: 1.8;
+            margin: 20px 0;
+        }
+
+        .progress {
+            background: #e9ecef;
+            height: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.5s;
+        }
+
+        .feedback {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <div class="heart"></div>
-        <h1>Will You Be My Valentine?</h1>
-        <p class="message" id="message">I've been thinking about you... 💭</p>
-        
-        <div class="buttons">
-            <button id="yesBtn" class="yes-btn">Yes! 💖</button>
-            <button id="noBtn" class="no-btn">No</button>
+        <!-- Progress Bar -->
+        <div class="progress">
+            <div class="progress-bar" id="progressBar" style="width: 0%"></div>
         </div>
-        
-        <div id="response" class="response hidden"></div>
+
+        <!-- Stage 1: Character Selection -->
+        <div class="stage active" id="stage1">
+            <h1>🏴‍☠️ Welcome to Your Valentine's Adventure! 🏴‍☠️</h1>
+            <p class="message">Before we begin, which One Piece character is your favorite?</p>
+            <div class="character-section">
+                <div class="character" onclick="selectCharacter('luffy')">
+                    <div class="character-emoji">👒</div>
+                    <div><strong>Luffy</strong></div>
+                    <div>The Captain</div>
+                </div>
+                <div class="character" onclick="selectCharacter('zoro')">
+                    <div class="character-emoji">⚔️</div>
+                    <div><strong>Zoro</strong></div>
+                    <div>The Swordsman</div>
+                </div>
+            </div>
+            <button id="continueBtn1" onclick="nextStage(2)" disabled>Continue Adventure →</button>
+        </div>
+
+        <!-- Stage 2: Calculus Problems -->
+        <div class="stage" id="stage2">
+            <h1>⚔️ Calculus Challenge! ⚔️</h1>
+            <p class="message">Solve these derivative problems to unlock the next treasure!</p>
+            
+            <div class="problem-section">
+                <div class="problem">
+                    <h3>🟢 Easy Challenge</h3>
+                    <p class="problem-text">Find the derivative: f(x) = 3x² + 5x - 2</p>
+                    <p>f'(x) = </p>
+                    <input type="text" id="answer1" placeholder="Enter your answer (e.g., 6x+5)">
+                    <div id="feedback1"></div>
+                </div>
+
+                <div class="problem">
+                    <h3>🟡 Medium Challenge</h3>
+                    <p class="problem-text">Find the derivative: g(x) = x³ - 4x² + 7x</p>
+                    <p>g'(x) = </p>
+                    <input type="text" id="answer2" placeholder="Enter your answer">
+                    <div id="feedback2"></div>
+                </div>
+
+                <div class="problem">
+                    <h3>🔴 Hard Challenge</h3>
+                    <p class="problem-text">Find the derivative: h(x) = (2x + 1)(x² - 3)</p>
+                    <p>h'(x) = </p>
+                    <input type="text" id="answer3" placeholder="Enter your answer">
+                    <div id="feedback3"></div>
+                </div>
+            </div>
+
+            <button onclick="checkAnswers()">Submit Answers</button>
+            <button id="continueBtn2" onclick="nextStage(3)" disabled>Continue to Final Treasure →</button>
+        </div>
+
+        <!-- Stage 3: Envelope Reveal -->
+        <div class="stage" id="stage3">
+            <h1>💌 You've Found the Treasure! 💌</h1>
+            <p class="message">Click the envelope to reveal a special message...</p>
+            
+            <div class="envelope" id="envelope" onclick="openEnvelope()">
+                <div class="envelope-body"></div>
+                <div class="envelope-flap"></div>
+                <div class="letter" id="letter">
+                    <h2 style="color: #764ba2; text-align: center;">💕 To Ellyza Jaye C. De Lara 💕</h2>
+                    <br>
+                    <p style="font-size: 1.1em; line-height: 1.8;">
+                        Dear Ellyza,
+                        <br><br>
+                        Just like Luffy never gives up on his dream to be Pirate King, I'll never give up on showing you how special you are. 
+                        <br><br>
+                        Just like Zoro's dedication to his crew, I'm dedicated to making you smile every day.
+                        <br><br>
+                        You solved the calculus problems (or tried your best!), and now you've unlocked the most important question...
+                        <br><br>
+                        <strong style="font-size: 1.3em; color: #764ba2;">Will you be my Valentine? 💕</strong>
+                        <br><br>
+                        You make every day an adventure worth sailing for! 🏴‍☠️❤️
+                        <br><br>
+                        With all my heart,<br>
+                        Your Secret Admirer 💝
+                    </p>
+                    <br>
+                    <div style="text-align: center;">
+                        <button onclick="respondYes()">Yes! 💖</button>
+                        <button onclick="respondMaybe()" style="background: #6c757d;">Maybe... 💭</button>
+                    </div>
+                    <div id="finalResponse"></div>
+                </div>
+            </div>
+        </div>
     </div>
-    
-    <script src="./script.js"></script>
+
+    <div class="heart-rain" id="heartRain"></div>
+
+    <script>
+        let selectedCharacter = '';
+        let problemsSolved = 0;
+
+        function selectCharacter(character) {
+            selectedCharacter = character;
+            document.querySelectorAll('.character').forEach(c => c.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            document.getElementById('continueBtn1').disabled = false;
+        }
+
+        function nextStage(stageNum) {
+            document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+            document.getElementById('stage' + stageNum).classList.add('active');
+            updateProgress(stageNum);
+        }
+
+        function updateProgress(stage) {
+            const progress = (stage - 1) * 33.33;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function checkAnswers() {
+            const answers = {
+                1: ['6x+5', '6x + 5', '5+6x', '5 + 6x'],
+                2: ['3x^2-8x+7', '3x²-8x+7', '3x^2 - 8x + 7', '3x² - 8x + 7'],
+                3: ['6x^2+2x-6', '6x²+2x-6', '6x^2 + 2x - 6', '6x² + 2x - 6']
+            };
+
+            let allCorrect = true;
+
+            for (let i = 1; i <= 3; i++) {
+                const userAnswer = document.getElementById('answer' + i).value.replace(/\s/g, '').toLowerCase();
+                const correctAnswers = answers[i].map(a => a.replace(/\s/g, '').toLowerCase());
+                const feedback = document.getElementById('feedback' + i);
+                
+                if (correctAnswers.some(a => userAnswer === a)) {
+                    feedback.innerHTML = '<div class="feedback correct">✓ Correct! Great job!</div>';
+                    problemsSolved++;
+                } else if (userAnswer === '') {
+                    feedback.innerHTML = '<div class="feedback incorrect">Please enter an answer!</div>';
+                    allCorrect = false;
+                } else {
+                    feedback.innerHTML = '<div class="feedback incorrect">Not quite right. Try again!</div>';
+                    allCorrect = false;
+                }
+            }
+
+            if (problemsSolved >= 2) {
+                document.getElementById('continueBtn2').disabled = false;
+                updateProgress(3);
+            }
+        }
+
+        function openEnvelope() {
+            document.getElementById('envelope').classList.add('open');
+        }
+
+        function respondYes() {
+            const response = document.getElementById('finalResponse');
+            response.innerHTML = `
+                <div style="text-align: center; margin-top: 30px; padding: 20px; background: #d4edda; border-radius: 10px;">
+                    <h2 style="color: #155724;">🎉 YAAAAY! 🎉</h2>
+                    <p style="font-size: 1.2em; color: #155724;">You just made this the best Valentine's Day ever! 💕✨</p>
+                </div>
+            `;
+            createHeartRain();
+        }
+
+        function respondMaybe() {
+            const response = document.getElementById('finalResponse');
+            response.innerHTML = `
+                <div style="text-align: center; margin-top: 30px; padding: 20px; background: #fff3cd; border-radius: 10px;">
+                    <h2 style="color: #856404;">💭 That's okay! 💭</h2>
+                    <p style="font-size: 1.2em; color: #856404;">Take your time! Just know you're amazing! 🌟</p>
+                </div>
+            `;
+        }
+
+        function createHeartRain() {
+            const heartRain = document.getElementById('heartRain');
+            const hearts = ['💕', '💖', '💗', '💝', '❤️', '🌹'];
+            
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const heart = document.createElement('div');
+                    heart.className = 'floating-heart';
+                    heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+                    heart.style.left = Math.random() * 100 + '%';
+                    heart.style.animationDelay = Math.random() * 2 + 's';
+                    heartRain.appendChild(heart);
+                    
+                    setTimeout(() => heart.remove(), 4000);
+                }, i * 100);
+            }
+        }
+    </script>
 </body>
 </html>
